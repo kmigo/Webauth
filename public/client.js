@@ -51,7 +51,7 @@ export const _fetch = async (path, payload = '') => {
   // console.log(credential);
   //   localStorage.setItem(`credId`, credential.id);
    // Solicitar opções de registro ao servidor
-   const response = await fetch('/registerBio');
+   const response = await _fetch('/registerBio',{});
    const options = await response.json();
  
    // Ajustar as opções para o formato correto
@@ -79,13 +79,7 @@ export const _fetch = async (path, payload = '') => {
    };
  
    // Enviar a credencial ao servidor para verificação e armazenamento
-   const verificationResponse = await fetch('/completeRegistration', {
-     method: 'POST',
-     body: JSON.stringify(publicKeyCredential),
-     headers: {
-       'Content-Type': 'application/json'
-     }
-   });
+   const verificationResponse = await _fetch('/completeRegistration',JSON.stringify(publicKeyCredential));
  
    const verificationResult = await verificationResponse.json();
    if (verificationResult.verified) {
