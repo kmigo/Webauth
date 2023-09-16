@@ -23,14 +23,21 @@ export const _fetch = async (path, payload = '') => {
       throw result.error;
     }
   };
-  
-  const base64Url = (str) => {
-    let encodedStr = "your_base64_string";
-const padding = "=".repeat((4 - (encodedStr.length % 4)) % 4);
-encodedStr += padding;
-const decodedStr = atob(encodedStr);
-return decodedStr;
+
+function safeAtob(base64) {
+  base64 = base64.trim().replace(/[^a-zA-Z0-9+/=]/g, "");
+  while (base64.length % 4) {
+      base64 += "=";
   }
+  try {
+      return atob(base64);
+  } catch (e) {
+      console.error("Failed to decode base64 string.", e);
+      return null;
+  }
+}
+
+
   export const registerCredential = async () => {
   // const options = await _fetch('/registerBio', {});
   // const encoder = new TextEncoder();
@@ -62,12 +69,12 @@ return decodedStr;
 
  
    // Ajustar as opções para o formato correto
-   options.user.id = Uint8Array.from(base64Url(options.user.id), c => c.charCodeAt(0));
-   options.challenge = Uint8Array.from(base64Url(options.challenge), c => c.charCodeAt(0));
+   options.user.id = Uint8Array.from(safeAtob(options.user.id), c => c.charCodeAt(0));
+   options.challenge = Uint8Array.from(safeAtob(options.challenge), c => c.charCodeAt(0));
  
    if (options.excludeCredentials) {
      for (let cred of options.excludeCredentials) {
-       cred.id = Uint8Array.from(base64Url(cred.id), c => c.charCodeAt(0));
+       cred.id = Uint8Array.from(safeAtob(cred.id), c => c.charCodeAt(0));
      }
    }
  
@@ -98,15 +105,15 @@ return decodedStr;
   }
   export const authentication =async () => {
 // Solicitar opções de autenticação ao servidor
-const response = await fetch('/webauthn/startAuthentication');
-const options = await response.json();
+const options = await fetch('/webauthn/startAuthentication');
+
 
 // Ajustar as opções para o formato correto
-options.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
+options.challenge = Uint8Array.from(safeAtob(options.challenge), c => c.charCodeAt(0));
 
 if (options.allowCredentials) {
   for (let cred of options.allowCredentials) {
-    cred.id = Uint8Array.from(atob(cred.id), c => c.charCodeAt(0));
+    cred.id = Uint8Array.from(safeAtob(cred.id), c => c.charCodeAt(0));
   }
 }
 
