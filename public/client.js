@@ -84,7 +84,7 @@ function safeAtob(base64) {
   }
   export const authentication =async () => {
 // Solicitar opções de autenticação ao servidor
-const options = await fetch('/authWeb');
+const options = await _fetch('/authWeb',{});
 
 
 // Ajustar as opções para o formato correto
