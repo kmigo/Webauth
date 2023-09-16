@@ -154,7 +154,7 @@ def your_endpoint_name(body: dict, request: Request):
         id = uuid_v4
         options  : PublicKeyCredentialCreationOptions= generate_registration_options(
             rp_name= RP_NAME,
-            rp_id= request.base_url.hostname,
+            rp_id= os.environ.get("RP_ID", request.base_url.hostname),
             user_id= user["id"],
             user_name= user["username"],
             challenge=bytearray(32),
