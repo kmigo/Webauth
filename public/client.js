@@ -43,32 +43,7 @@ function safeAtob(base64) {
 
 
   export const registerCredential = async () => {
-  // const options = await _fetch('/registerBio', {});
-  // const encoder = new TextEncoder();
-  // let uint8Array = new Uint8Array(options.challenge);
-  // options.user.id = encoder.encode(options.user.id);
-  // options.challenge = uint8Array
-  //   const cred = await navigator.credentials.create({
-  //   publicKey: options,
-  // });
-  // const credential = {};
-  // credential.id = cred.id;
-  // credential.rawId = encoder.e(cred.rawId);
-  // credential.type = cred.type;
-  
-  // if (cred.response) {
-  //   const clientDataJSON =
-  //     base64url.encode(cred.response.clientDataJSON);
-  //   const attestationObject =
-  //     base64url.encode(cred.response.attestationObject);
-  //   credential.response = {
-  //     clientDataJSON,
-  //     attestationObject,
-  //   };
-  // }
-  // console.log(credential);
-  //   localStorage.setItem(`credId`, credential.id);
-   // Solicitar opções de registro ao servidor
+ 
    const options = await _fetch('/registerBio',{});
 
  
@@ -95,21 +70,21 @@ function safeAtob(base64) {
        attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.attestationObject)))
      }
    };
- 
+   localStorage.setItem('credId',credential.id);
    // Enviar a credencial ao servidor para verificação e armazenamento
-   const verificationResult = await _fetch('/completeRegistration',publicKeyCredential);
-   console.log(verificationResult);
+  //  const verificationResult = await _fetch('/completeRegistration',publicKeyCredential);
+  //  console.log(verificationResult);
 
-   if (verificationResult.verified) {
-     console.log('Registration successful');
-   } else {
-     console.log('Registration failed');
-   }
+  //  if (verificationResult.verified) {
+  //    console.log('Registration successful');
+  //  } else {
+  //    console.log('Registration failed');
+  //  }
 
   }
   export const authentication =async () => {
 // Solicitar opções de autenticação ao servidor
-const options = await fetch('/webauthn/startAuthentication');
+const options = await fetch('/authWeb');
 
 
 // Ajustar as opções para o formato correto
@@ -123,7 +98,7 @@ if (options.allowCredentials) {
 
 // Solicitar ao navegador para usar uma credencial existente
 const credential = await navigator.credentials.get({ publicKey: options });
-
+alert('logado');
 // Ajustar a credencial para enviar ao servidor
 const publicKeyCredential = {
   id: credential.id,
@@ -138,19 +113,19 @@ const publicKeyCredential = {
 };
 
 // Enviar a credencial ao servidor para verificação
-const verificationResult = await fetch('/webauthn/finishAuthentication', {
-  method: 'POST',
-  body: JSON.stringify(publicKeyCredential),
-  headers: {
-    'Content-Type': 'application/json'
-  }
-});
+// const verificationResult = await fetch('/webauthn/finishAuthentication', {
+//   method: 'POST',
+//   body: JSON.stringify(publicKeyCredential),
+//   headers: {
+//     'Content-Type': 'application/json'
+//   }
+// });
 
 
-if (verificationResult.verified) {
-  console.log('Authentication successful');
-} else {
-  console.log('Authentication failed');
-}
+// if (verificationResult.verified) {
+//   console.log('Authentication successful');
+// } else {
+//   console.log('Authentication failed');
+// }
   
   }

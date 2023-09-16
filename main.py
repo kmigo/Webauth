@@ -123,23 +123,44 @@ def your_endpoint_name(body: dict, request: Request):
     challenges[username] = urlsafe_b64encode(challenge).decode()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
+    # return {
+    #     "rp": {
+    #         "name": RP_NAME,
+    #         "id": os.environ.get("RP_ID", request.base_url.hostname)
+    #     },
+    #     "user": {
+    #         "id": urlsafe_b64encode(os.urandom(32)).decode(),
+    #         "name": username,
+    #         "displayName": username
+    #     },
+    #     "challenge": challenges[username],
+    #     "pubKeyCredParams": [
+    #         {"type": "public-key", "alg": -7},
+    #         {"type": "public-key", "alg": -257}
+    #     ]
+    # }
     return {
-        "rp": {
-            "name": RP_NAME,
-            "id": os.environ.get("RP_ID", request.base_url.hostname)
+          "rp": {
+        "name": "webauth-python",
+        "id": "webauth-python-c24178bbb68a.herokuapp.com"
+    },
+    "user": {
+        "id": "GYlJhaiG3rxulx9_Wp5C8hdO4h-KJnAcFS1XPQPCmAg=",
+        "name": "kmigo",
+        "displayName": "kmigo"
+    },
+    "challenge": "oh6_JthluN_BkMBJLfoKJHaJJRwONWgFCt9Im6RzZ4k=",
+    "pubKeyCredParams": [
+        {
+            "type": "public-key",
+            "alg": -7
         },
-        "user": {
-            "id": urlsafe_b64encode(os.urandom(32)).decode(),
-            "name": username,
-            "displayName": username
-        },
-        "challenge": challenges[username],
-        "pubKeyCredParams": [
-            {"type": "public-key", "alg": -7},
-            {"type": "public-key", "alg": -257}
-        ]
+        {
+            "type": "public-key",
+            "alg": -257
+        }
+    ]
     }
-
 @app.post("/completeRegistration")
 async def complete_registration(body: dict):
     # TODO: Adicione lógica de validação usando uma biblioteca de WebAuthn
@@ -150,3 +171,28 @@ async def complete_registration(body: dict):
     # ))
     # Por enquanto, apenas retorne uma mensagem de sucesso
     return body
+
+@app.get("/authWeb")
+async def authWeb(body: dict, request: Request):
+    return {
+          "rp": {
+        "name": "webauth-python",
+        "id": "webauth-python-c24178bbb68a.herokuapp.com"
+    },
+    "user": {
+        "id": "GYlJhaiG3rxulx9_Wp5C8hdO4h-KJnAcFS1XPQPCmAg=",
+        "name": "kmigo",
+        "displayName": "kmigo"
+    },
+    "challenge": "oh6_JthluN_BkMBJLfoKJHaJJRwONWgFCt9Im6RzZ4k=",
+    "pubKeyCredParams": [
+        {
+            "type": "public-key",
+            "alg": -7
+        },
+        {
+            "type": "public-key",
+            "alg": -257
+        }
+    ]
+    }
