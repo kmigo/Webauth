@@ -64,6 +64,7 @@ export const _fetch = async (path, payload = '') => {
     
     timeout: 60000,
   };
+  console.log(window.location.hostname)
     const cred = await navigator.credentials.create({
     publicKey: options,
   });
