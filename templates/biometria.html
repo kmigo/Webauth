@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #007BFF;
+            color: #ffffff;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <button id="biometricButton" style="display: none;">Placeholder</button>
+
+    <script type="module">
+        import {  registerCredential } from '/static/client.js';
+        window.onload = async () => {
+            const biometricButton = document.getElementById('biometricButton');
+            
+            // Verificar se window.PublicKeyCredential existe
+            if ("PublicKeyCredential" in window) {
+                
+                // Verificar se a autenticação biométrica está disponível
+                const isUserVerifying = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+                
+                // Verificar se 'credId' existe no localStorage
+                const hasCredId = !!localStorage.getItem('credId');
+                
+                if (isUserVerifying && hasCredId) {
+                    biometricButton.innerText = "Autenticar com biometria";
+                } else {
+                    biometricButton.innerText = "Cadastrar biometria";
+                }
+                
+                biometricButton.style.display = 'block';
+            }
+
+        
+            biometricButton.addEventListener('click', async () => {
+            if (biometricButton.innerText === "Cadastrar biometria") {
+                registerCredential().then(data =>{ 
+                console.log(data);
+
+             }).catch(error => {
+                //window.location.href = "/";
+                console.log(error);
+             })
+            } else {
+                 loginWithBiometrics();
+            }
+        });
+
+         function registerBiometrics() {
+            
+        }
+
+        async function loginWithBiometrics() {
+            // Da mesma forma, para logar, você precisaria buscar um desafio do seu servidor
+            const challenge = "/* buscar do servidor */";
+            const allowCredentials = "/* buscar do servidor (id das credenciais que você armazenou na etapa de registro) */";
+
+            const publicKeyCredentialRequestOptions = {
+                challenge: Uint8Array.from(atob(challenge), c => c.charCodeAt(0)), // transformar challenge base64 para Uint8Array
+                allowCredentials: allowCredentials.map(cred => ({
+                    id: Uint8Array.from(atob(cred.id), c => c.charCodeAt(0)), // Transforma credId base64 para Uint8Array
+                    type: "public-key",
+                    transports: ["usb", "ble", "nfc", "internal"],
+                })),
+                userVerification: "required",
+                timeout: 60000
+            };
+
+            const assertion = await navigator.credentials.get({publicKey: publicKeyCredentialRequestOptions});
+
+            // Você deve enviar essa afirmação para o servidor para verificação
+            // ...
+        }
+            
+        };
+    </script>
+</body>
+</html>
