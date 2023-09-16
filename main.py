@@ -9,8 +9,8 @@ import json
 import base64
 import os
 from base64 import urlsafe_b64encode
-from webauthn import generate_registration_options
-from webauthn.helpers.structs import PublicKeyCredentialCreationOptions,PublicKeyCredentialParameters,AttestationConveyancePreference,PublicKeyCredentialDescriptor,AuthenticatorSelectionCriteria
+from webauthn import verify_authentication_response
+from webauthn.helpers.structs import AuthenticationCredential,AuthenticatorAssertionResponse
 app = FastAPI()
 import uuid
 TIMEOUT = 30 * 1000 * 60
@@ -20,6 +20,13 @@ app.add_middleware(SessionMiddleware, secret_key=SECRET_KEY)
 def save_json(data, filename='data.json'):
     with open(filename, 'w+') as f:
         json.dump(data, f, indent=4)
+from pydantic import BaseModel
+
+class WebAuthnCredential(BaseModel):
+    id: str
+    rawId: str
+    type: str
+    response: dict  # Pode ser modificado para ser mais específico se necessário
 
 
 def load_json():
@@ -132,3 +139,14 @@ def your_endpoint_name(body: dict, request: Request):
             {"type": "public-key", "alg": -257}
         ]
     }
+
+@app.post("/completeRegistration")
+async def complete_registration(body: dict):
+    # TODO: Adicione lógica de validação usando uma biblioteca de WebAuthn
+    # verify_authentication_response(credential=AuthenticationCredential(
+    #     id=credential.id,
+    #     raw_id=credential.rawId,
+    #     response=credential.response,
+    # ))
+    # Por enquanto, apenas retorne uma mensagem de sucesso
+    return body

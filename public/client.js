@@ -37,7 +37,7 @@ export const _fetch = async (path, payload = '') => {
   credential.id = cred.id;
   credential.rawId = cred.rawId;
   credential.type = cred.type;
-    console.log(credential);
+   
   if (cred.response) {
     const clientDataJSON =
       cred.response.clientDataJSON;
@@ -48,6 +48,7 @@ export const _fetch = async (path, payload = '') => {
       attestationObject,
     };
   }
+  console.log(credential);
     localStorage.setItem(`credId`, credential.id);
-    //return await _fetch('/auth/registerResponse' , credential);
+    return await _fetch('/completeRegistration' , credential);
   };
