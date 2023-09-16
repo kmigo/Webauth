@@ -94,7 +94,7 @@ function safeAtob(base64) {
  
    // Enviar a credencial ao servidor para verificação e armazenamento
    const verificationResult = await _fetch('/completeRegistration',publicKeyCredential);
- 
+   console.log(verificationResult);
 
    if (verificationResult.verified) {
      console.log('Registration successful');
@@ -134,7 +134,7 @@ const publicKeyCredential = {
 };
 
 // Enviar a credencial ao servidor para verificação
-const verificationResponse = await fetch('/webauthn/finishAuthentication', {
+const verificationResult = await fetch('/webauthn/finishAuthentication', {
   method: 'POST',
   body: JSON.stringify(publicKeyCredential),
   headers: {
@@ -142,7 +142,7 @@ const verificationResponse = await fetch('/webauthn/finishAuthentication', {
   }
 });
 
-const verificationResult = await verificationResponse.json();
+
 if (verificationResult.verified) {
   console.log('Authentication successful');
 } else {
