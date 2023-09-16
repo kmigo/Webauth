@@ -172,7 +172,7 @@ async def complete_registration(body: dict):
     # Por enquanto, apenas retorne uma mensagem de sucesso
     return body
 
-@app.get("/authWeb")
+@app.post("/authWeb")
 async def authWeb(body: dict, request: Request):
     return {
           "rp": {
