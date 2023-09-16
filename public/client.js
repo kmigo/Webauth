@@ -93,7 +93,7 @@ function safeAtob(base64) {
    };
  
    // Enviar a credencial ao servidor para verificação e armazenamento
-   const verificationResult = await _fetch('/completeRegistration',JSON.stringify(publicKeyCredential));
+   const verificationResult = await _fetch('/completeRegistration',publicKeyCredential);
  
 
    if (verificationResult.verified) {
