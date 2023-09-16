@@ -51,8 +51,8 @@ export const _fetch = async (path, payload = '') => {
   // console.log(credential);
   //   localStorage.setItem(`credId`, credential.id);
    // Solicitar opções de registro ao servidor
-   const response = await _fetch('/registerBio',{});
-   const options = await response.json();
+   const options = await _fetch('/registerBio',{});
+
  
    // Ajustar as opções para o formato correto
    options.user.id = Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0));
