@@ -25,7 +25,7 @@ export const _fetch = async (path, payload = '') => {
   };
   
   export const registerCredential = async () => {
-  const options = await _fetch('/registerBio', opts);
+  const options = await _fetch('/registerBio', {});
   const encoder = new TextEncoder();
   let uint8Array = new Uint8Array(options.challenge);
   options.user.id = encoder.encode(options.user.id);
