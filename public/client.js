@@ -25,30 +25,77 @@ export const _fetch = async (path, payload = '') => {
   };
   
   export const registerCredential = async () => {
-  const options = await _fetch('/registerBio', {});
-  const encoder = new TextEncoder();
-  let uint8Array = new Uint8Array(options.challenge);
-  options.user.id = encoder.encode(options.user.id);
-  options.challenge = uint8Array
-    const cred = await navigator.credentials.create({
-    publicKey: options,
-  });
-    const credential = {};
-  credential.id = cred.id;
-  credential.rawId = cred.rawId;
-  credential.type = cred.type;
-   
-  if (cred.response) {
-    const clientDataJSON =
-      cred.response.clientDataJSON;
-    const attestationObject =
-      cred.response.attestationObject;
-    credential.response = {
-      clientDataJSON,
-      attestationObject,
-    };
+  // const options = await _fetch('/registerBio', {});
+  // const encoder = new TextEncoder();
+  // let uint8Array = new Uint8Array(options.challenge);
+  // options.user.id = encoder.encode(options.user.id);
+  // options.challenge = uint8Array
+  //   const cred = await navigator.credentials.create({
+  //   publicKey: options,
+  // });
+  // const credential = {};
+  // credential.id = cred.id;
+  // credential.rawId = encoder.e(cred.rawId);
+  // credential.type = cred.type;
+  
+  // if (cred.response) {
+  //   const clientDataJSON =
+  //     base64url.encode(cred.response.clientDataJSON);
+  //   const attestationObject =
+  //     base64url.encode(cred.response.attestationObject);
+  //   credential.response = {
+  //     clientDataJSON,
+  //     attestationObject,
+  //   };
+  // }
+  // console.log(credential);
+  //   localStorage.setItem(`credId`, credential.id);
+   // Solicitar opções de registro ao servidor
+   const response = await fetch('/registerBio');
+   const options = await response.json();
+ 
+   // Ajustar as opções para o formato correto
+   options.user.id = Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0));
+   options.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
+ 
+   if (options.excludeCredentials) {
+     for (let cred of options.excludeCredentials) {
+       cred.id = Uint8Array.from(atob(cred.id), c => c.charCodeAt(0));
+     }
+   }
+ 
+   // Solicitar ao navegador a criação de uma nova credencial
+   const credential = await navigator.credentials.create({ publicKey: options });
+ 
+   // Ajustar a credencial para enviar ao servidor
+   const publicKeyCredential = {
+     id: credential.id,
+     type: credential.type,
+     rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.rawId))),
+     response: {
+       clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.clientDataJSON))),
+       attestationObject: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.attestationObject)))
+     }
+   };
+ 
+   // Enviar a credencial ao servidor para verificação e armazenamento
+   const verificationResponse = await fetch('/completeRegistration', {
+     method: 'POST',
+     body: JSON.stringify(publicKeyCredential),
+     headers: {
+       'Content-Type': 'application/json'
+     }
+   });
+ 
+   const verificationResult = await verificationResponse.json();
+   if (verificationResult.verified) {
+     console.log('Registration successful');
+   } else {
+     console.log('Registration failed');
+   }
+
   }
-  console.log(credential);
-    localStorage.setItem(`credId`, credential.id);
-    return await _fetch('/completeRegistration' , credential);
-  };
+  export const authentication =async () => {
+
+  
+  }
