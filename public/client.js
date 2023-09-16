@@ -79,9 +79,9 @@ export const _fetch = async (path, payload = '') => {
    };
  
    // Enviar a credencial ao servidor para verificação e armazenamento
-   const verificationResponse = await _fetch('/completeRegistration',JSON.stringify(publicKeyCredential));
+   const verificationResult = await _fetch('/completeRegistration',JSON.stringify(publicKeyCredential));
  
-   const verificationResult = await verificationResponse.json();
+
    if (verificationResult.verified) {
      console.log('Registration successful');
    } else {
