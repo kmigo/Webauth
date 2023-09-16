@@ -24,6 +24,13 @@ export const _fetch = async (path, payload = '') => {
     }
   };
   
+  const base64Url = (str) => {
+    let encodedStr = "your_base64_string";
+const padding = "=".repeat((4 - (encodedStr.length % 4)) % 4);
+encodedStr += padding;
+const decodedStr = atob(encodedStr);
+return decodedStr;
+  }
   export const registerCredential = async () => {
   // const options = await _fetch('/registerBio', {});
   // const encoder = new TextEncoder();
@@ -55,12 +62,12 @@ export const _fetch = async (path, payload = '') => {
 
  
    // Ajustar as opções para o formato correto
-   options.user.id = Uint8Array.from(atob(options.user.id), c => c.charCodeAt(0));
-   options.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
+   options.user.id = Uint8Array.from(base64Url(options.user.id), c => c.charCodeAt(0));
+   options.challenge = Uint8Array.from(base64Url(options.challenge), c => c.charCodeAt(0));
  
    if (options.excludeCredentials) {
      for (let cred of options.excludeCredentials) {
-       cred.id = Uint8Array.from(atob(cred.id), c => c.charCodeAt(0));
+       cred.id = Uint8Array.from(base64Url(cred.id), c => c.charCodeAt(0));
      }
    }
  
@@ -90,6 +97,49 @@ export const _fetch = async (path, payload = '') => {
 
   }
   export const authentication =async () => {
+// Solicitar opções de autenticação ao servidor
+const response = await fetch('/webauthn/startAuthentication');
+const options = await response.json();
 
+// Ajustar as opções para o formato correto
+options.challenge = Uint8Array.from(atob(options.challenge), c => c.charCodeAt(0));
+
+if (options.allowCredentials) {
+  for (let cred of options.allowCredentials) {
+    cred.id = Uint8Array.from(atob(cred.id), c => c.charCodeAt(0));
+  }
+}
+
+// Solicitar ao navegador para usar uma credencial existente
+const credential = await navigator.credentials.get({ publicKey: options });
+
+// Ajustar a credencial para enviar ao servidor
+const publicKeyCredential = {
+  id: credential.id,
+  type: credential.type,
+  rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.rawId))),
+  response: {
+    clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.clientDataJSON))),
+    authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.authenticatorData))),
+    signature: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.signature))),
+    userHandle: btoa(String.fromCharCode.apply(null, new Uint8Array(credential.response.userHandle)))
+  }
+};
+
+// Enviar a credencial ao servidor para verificação
+const verificationResponse = await fetch('/webauthn/finishAuthentication', {
+  method: 'POST',
+  body: JSON.stringify(publicKeyCredential),
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+const verificationResult = await verificationResponse.json();
+if (verificationResult.verified) {
+  console.log('Authentication successful');
+} else {
+  console.log('Authentication failed');
+}
   
   }
