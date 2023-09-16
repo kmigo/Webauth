@@ -23,8 +23,12 @@ export const _fetch = async (path, payload = '') => {
       throw result.error;
     }
   };
-
+  function base64UrlToBase64(base64Url) {
+    let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    return base64;
+}
 function safeAtob(base64) {
+  base64 = base64UrlToBase64(base64);
   base64 = base64.trim().replace(/[^a-zA-Z0-9+/=]/g, "");
   while (base64.length % 4) {
       base64 += "=";
