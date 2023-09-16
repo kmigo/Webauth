@@ -116,7 +116,7 @@ def your_endpoint_name(body: dict, request: Request):
     challenges[username] = urlsafe_b64encode(challenge).decode()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
-    {
+    return {
         "rp": {
             "name": RP_NAME,
             "id": os.environ.get("RP_ID", request.base_url.hostname)
