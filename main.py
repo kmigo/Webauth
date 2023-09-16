@@ -8,6 +8,7 @@ from starlette.requests import Request
 import json
 import base64
 import os
+from base64 import urlsafe_b64encode
 from webauthn import generate_registration_options
 from webauthn.helpers.structs import PublicKeyCredentialCreationOptions,PublicKeyCredentialParameters,AttestationConveyancePreference,PublicKeyCredentialDescriptor,AuthenticatorSelectionCriteria
 app = FastAPI()
@@ -92,7 +93,7 @@ router.post('/password', (req, res) => {
   return res.json(user);
 });
 """
-
+challenges = {}
 @app.post("/password")
 def password(body:dict,request: Request):
     pwd = body["password"]
@@ -111,87 +112,23 @@ def your_endpoint_name(body: dict, request: Request):
     username = request.session.get('user', None)
     db = load_json()
     user = db.get(username, None)
+    challenge = os.urandom(32)
+    challenges[username] = urlsafe_b64encode(challenge).decode()
     if not user:
         raise HTTPException(status_code=400, detail="User not found")
-    try:
-        exclude_credentials = []
-
-        if user["credentials"]:
-            for cred in user["credentials"]:
-                buffer_id = base64.urlsafe_b64decode(cred["credId"])
-
-                exclude_credentials.append(PublicKeyCredentialDescriptor(id=buffer_id,type="public-key",transports=["internal"]))
-
-        pub_key_cred_params = []
-        params = [-7, -257]
-
-        for param in params:
-            pub_key_cred_params.append({"type": "public-key", "alg": param})
-
-        as_dict = {}  # renamed from "as" to avoid conflict with the Python keyword
-        aa = body.get("authenticatorSelection", {}).get("authenticatorAttachment")
-        rr = body.get("authenticatorSelection", {}).get("requireResidentKey")
-        uv = body.get("authenticatorSelection", {}).get("userVerification")
-        cp = body.get("attestation")
-        as_flag = False
-        authenticator_selection = None  # using None as equivalent to JS undefined
-        attestation = "none"
-
-        if aa and (aa in ["platform", "cross-platform"]):
-            as_flag = True
-            as_dict["authenticatorAttachment"] = aa
-        if rr and isinstance(rr, bool):
-            as_flag = True
-            as_dict["requireResidentKey"] = rr
-        if uv and uv in ["required", "preferred", "discouraged"]:
-            as_flag = True
-            as_dict["userVerification"] = uv
-        if as_flag:
-            authenticator_selection = AuthenticatorSelectionCriteria(**as_dict)
-        if cp and cp in ["none", "indirect", "direct"]:
-            attestation = cp
-        uuid_v4 = uuid.uuid4()
-        id = uuid_v4
-        options  : PublicKeyCredentialCreationOptions= generate_registration_options(
-            rp_name= RP_NAME,
-            rp_id= os.environ.get("RP_ID", request.base_url.hostname),
-            user_id= user["id"],
-            user_name= user["username"],
-            challenge=bytearray(32),
-            timeout= TIMEOUT,
-            attestation=attestation,
-            exclude_credentials=exclude_credentials,
-            authenticator_selection=authenticator_selection
-        )
-
-        request.session["challenge"] =str(options.challenge)
-
-        # Temporary hack until SimpleWebAuthn supports `pubKeyCredParams`
-        #options["pubKeyCredParams"] = []
-        options.pub_key_cred_params = []
-
-        for param in params:
-
-            #options.pub_key_cred_params.append({"type": "public-key", "alg": param})
-            options.pub_key_cred_params.append(PublicKeyCredentialParameters(type="public-key", alg=param))
-        response = options.model_dump()
-        response['challenge'] = list(options.challenge)
-        pub_key = response.pop('pub_key_cred_params')
-        response['pubKeyCredParams'] = pub_key
-        exclude_credentials_dump = response.pop('exclude_credentials')
-        response['excludeCredentials'] = exclude_credentials_dump
-        response.pop('authenticator_selection')
-        response['authenticatorSelection'] = {
-            "authenticatorAttachment":authenticator_selection.authenticator_attachment,
-            "userVerification":authenticator_selection.user_verification,
-            
-        }
-        response['user'] ={
-            "id":user["id"],
-            "name":user["username"],
-            "displayName":user["username"],
-        }
-        #response = response['challenge'].decode("latin1")
-        return response
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    {
+        "rp": {
+            "name": RP_NAME,
+            "id": os.environ.get("RP_ID", request.base_url.hostname)
+        },
+        "user": {
+            "id": urlsafe_b64encode(os.urandom(32)).decode(),
+            "name": username,
+            "displayName": username
+        },
+        "challenge": challenges[username],
+        "pubKeyCredParams": [
+            {"type": "public-key", "alg": -7},
+            {"type": "public-key", "alg": -257}
+        ]
+    }
