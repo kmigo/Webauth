@@ -41,7 +41,7 @@ export const _fetch = async (path, payload = '') => {
 //     options.user.id = base64url.decode(options.user.id);
 //   options.challenge = base64url.decode(options.challenge);
   options.user.id = encoder.encode(options.user.id);
-  options.challenge = uint8Array
+
 
   if (options.excludeCredentials) {
     for (let cred of options.excludeCredentials) {
